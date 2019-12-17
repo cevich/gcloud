@@ -57,8 +57,8 @@ google-cloud-sdk:
 	$(MAKE) guard-CTR guard-BUILDAH_RUN
 	$(call run,$@,$(BUILDAH_RUN) $(CTR) dnf install -y python2)
 
-._cpy: ._ctr
-	$(MAKE) guard-CTR guard-BUILDAH google-cloud-sdk guard-SDK_DEST_DIR
+._cpy: ._ctr google-cloud-sdk
+	$(MAKE) guard-CTR guard-BUILDAH guard-SDK_DEST_DIR
 	$(call run,$@,$(BUILDAH) copy $(CTR) "$(CURDIR)/google-cloud-sdk" $(SDK_DEST_DIR))
 
 ._ins: ._cpy
