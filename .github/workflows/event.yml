@@ -1,0 +1,19 @@
+---
+
+# Ref: https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: Debug Event JSON
+
+on:
+    pull_request:
+        branches: [master]
+    push:
+        branches: [master]
+
+jobs:
+    event_detail:
+        runs-on: ubuntu-latest
+        steps:
+            - run: |
+                sudo apt-get -qq install --yes jq
+                jq --indent 2 --color-output . "$GITHUB_EVENT_PATH"

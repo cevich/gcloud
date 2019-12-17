@@ -1,0 +1,39 @@
+# Ref: https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: Use container tools to build gcloud image based on latest fedora base image
+
+on:
+    pull_request:
+        branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout target repository
+          uses: actions/checkout@master
+
+        # The default docker profile is too strict to allow image building inside a container
+        - name: Download podman's seccomp profile
+          run: curl -L https://raw.githubusercontent.com/containers/libpod/master/seccomp.json | sudo tee /etc/docker/seccomp.json
+        - name: Reconfigure docker daemon service
+          # Simplify value quoting
+          run: |
+              sed -r -e 's#(^ExecStart.+)#\1 --seccomp-profile=/etc/docker/seccomp.json#' /lib/systemd/system/docker.service | sudo tee /etc/systemd/system/docker.service
+
+        # AppArmor cannot be configured or modified in any sensible way to allow
+        # bind-mounts inside a container.  Disable AppArmor on the entire system
+        # as a work around.
+        - name: Workaround Docker's AppArmor Insanity
+          run: |
+              sudo systemctl stop apparmor
+              sudo apt-get -qq remove --yes apparmor
+
+        - name: Reload systemd
+          run: sudo systemctl daemon-reload
+
+        - name: Restart docker daemon
+          run: sudo systemctl restart docker
+
+        - name: Build gcloud container image with buildah
+          uses: cevich/makecontaineraction@v1.4
