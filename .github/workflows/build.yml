@@ -1,6 +1,6 @@
 # Ref: https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: Use container tools to build gcloud image based on latest fedora base image
+name: Build gcloud and gsutil images based on latest Fedora
 
 on:
     pull_request:
@@ -37,3 +37,12 @@ jobs:
 
         - name: Build gcloud container image with buildah
           uses: cevich/makecontaineraction@v1.4
+          with:
+              artifacts_dirpath: ./images
+
+        - name: Upload images directory as an artifact
+          uses: actions/upload-artifact@master
+          with:
+              name: images
+              path: ./images
+
