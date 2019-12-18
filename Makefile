@@ -41,6 +41,10 @@ guard-%:
 	$(if $($*),,$(error Required variable $* is undefined or empty))
 
 ._ctr:
+	# Destroy any pre-existing "old" image
+	$(call buildah_cmd_rm,._img,rmi -f)
+	# Destroy any pre-existing "old" state
+	$(call buildah_cmd_rm,._ctr,rm)
 	$(MAKE) guard-BUILDAH guard-IMG_BASE_NAME guard-IMG_BASE_TAG
 	$(call run,$@,$(BUILDAH) from $(IMG_BASE_NAME):$(IMG_BASE_TAG))
 
@@ -78,6 +82,8 @@ google-cloud-sdk:
 	$(call run,$@,$(BUILDAH) config --entrypoint $(ENTRY) $(CTR))
 
 ._img: ._ctr ._upd ._pkg ._cpy ._ins ._cfg ._cln
+	# Destroy any pre-existing "old" image
+	$(call buildah_cmd_rm,._img,rmi -f)
 	$(MAKE) guard-CTR guard-BUILDAH guard-IMGNAME
 	$(call run,$@,$(BUILDAH) commit $(CTR) $(IMGNAME))
 
